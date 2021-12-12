@@ -1,5 +1,5 @@
 #timeline-container {
-  width: 300px;
+  width: 100vw;
   height: 100vh;
   background-color: rgb(14, 14, 14);
   overflow: auto;
