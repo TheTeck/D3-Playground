@@ -51,7 +51,7 @@ export default function FetchData (props) {
 
         const svg = d3.select(svgRef.current);
 
-        const circleRadius = 5;
+        const circleRadius = 10;
         const lineLength = 200 - circleRadius;
         const minYear = d3.min(data, d => d3.timeParse('%Y')(d.launch_year))
         const maxYear = new Date('2022-01-02');
@@ -59,23 +59,32 @@ export default function FetchData (props) {
         const y = d3.scaleTime()
             .domain([minYear, maxYear])
             .range([0, 3000])
+        
+        // Make circle larger when hovered over
+        function expandLaunch () {
+            this.parentNode.appendChild(this);
+
+            d3.select(this)
+                .transition()
+                    .duration(250)
+                    .attr('r', circleRadius * 3)
+        }
+
+        // Make circle small when mouse stops hovering
+        function contractLaunch () {
+            this.parentNode.appendChild(this);
+
+            d3.select(this)
+                .transition()
+                    .duration(250)
+                    .attr('r', circleRadius)
+        }
 
         // Draw the vertical axis
         svg.append('g')
             .call(d3.axisLeft(y))
             .attr('transform', 'translate(100, 100)')
             .attr('class', 'timeline-axis')
-        
-        // Draw the circles for each launch entry
-        svg.append('g')
-            .selectAll('cirlce')
-            .data(data)
-            .join('circle')
-                .attr('transform', 'translate(0, 100)')
-                .attr('cx', lineLength + circleRadius)
-                .attr('cy', d => y(new Date(d.launch_date_utc)))
-                .attr('r', circleRadius)
-                .style('fill', d => rocketColors[d.rocket.rocket_name])
         
         // Draw the line from the axis to the circle
         svg.append('g')
@@ -87,6 +96,21 @@ export default function FetchData (props) {
                 .attr('y1', d=> y(new Date(d.launch_date_utc)) + 100)
                 .attr('x2', lineLength)
                 .attr('y2', d=> y(new Date(d.launch_date_utc)) + 100)
+        
+        // Draw the circles for each launch entry
+        svg.append('g')
+            .selectAll('circle')
+            .data(data)
+            .join('circle')
+                .attr('transform', 'translate(0, 100)')
+                .attr('cx', lineLength + circleRadius)
+                .attr('cy', d => y(new Date(d.launch_date_utc)))
+                .attr('r', circleRadius)
+                .style('fill', d => rocketColors[d.rocket.rocket_name])
+                .on('mouseover', expandLaunch)
+                .on('mouseleave', contractLaunch)
+
+        
 
 
     }, [data])
