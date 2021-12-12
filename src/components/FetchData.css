@@ -1,0 +1,26 @@
+#timeline-container {
+  width: 300px;
+  height: 100vh;
+  background-color: rgb(14, 14, 14);
+  overflow: auto;
+}
+
+svg {
+  width: 100%;
+  height: 3200px;
+}
+
+.timeline-axis line,
+.timeline-axis path {
+  stroke: white;
+  stroke-width: 3px;
+}
+
+.timeline-axis text {
+  color: white;
+  font-size: 18px;
+}
+
+.line-extension {
+  stroke: white;
+}
