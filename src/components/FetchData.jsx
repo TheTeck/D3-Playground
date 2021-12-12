@@ -68,6 +68,10 @@ export default function FetchData (props) {
                 .transition()
                     .duration(250)
                     .attr('r', circleRadius * 3)
+                    .attr('stroke', 'white')
+                    .attr('stroke-width', 3)
+                    
+                        
         }
 
         // Make circle small when mouse stops hovering
@@ -78,6 +82,7 @@ export default function FetchData (props) {
                 .transition()
                     .duration(250)
                     .attr('r', circleRadius)
+                    .attr('stroke-width', 0)
         }
 
         // Draw the vertical axis
@@ -109,9 +114,20 @@ export default function FetchData (props) {
                 .style('fill', d => rocketColors[d.rocket.rocket_name])
                 .on('mouseover', expandLaunch)
                 .on('mouseleave', contractLaunch)
-
-        
-
+                
+        // Draw numbers in the circles
+        svg.append('g')
+            .selectAll('text')
+            .data(data)
+            .join('text')
+                .attr('transform', 'translate(0, 100)')
+                .attr('class', 'launch-number')
+                .attr('font-size', '18px')
+                .attr('x', lineLength + circleRadius)
+                .attr('y', d => y(new Date(d.launch_date_utc)))
+                .attr('text-anchor', 'center')
+                .style('visibility', 'hidden')
+                .text(d => d.flight_number)
 
     }, [data])
 

@@ -24,3 +24,9 @@ svg {
 .line-extension {
   stroke: white;
 }
+
+.launch-number {
+  fill: black;
+  text-anchor: middle;
+  pointer-events: none;
+}
