@@ -12,6 +12,8 @@ const rocketColors = {
 export default function FetchData (props) {
 
     const [data, setData] = useState([]);
+    const [activeNode, setActiveNode] = useState(null);
+
     const svgRef = useRef();
 
     async function getData () {
@@ -25,12 +27,16 @@ export default function FetchData (props) {
         }
     }
 
+    // Show or hide launch details
+    function toggleActive (e, d) {
+        setActiveNode(activeNode ? null : d);
+    }
+
     useEffect(() => {
         getData();
     }, [])
 
     useEffect(() => {
-
         const svg = d3.select(svgRef.current);
 
         const circleRadius = 10;
@@ -40,7 +46,7 @@ export default function FetchData (props) {
 
         const y = d3.scaleTime()
             .domain([minYear, maxYear])
-            .range([0, 3800])
+            .range([0, 4000])
         
         // Make circle larger when hovered over
         function handleMouseOver () {
@@ -86,45 +92,38 @@ export default function FetchData (props) {
             .call(d3.axisLeft(y))
             .attr('transform', 'translate(100, 100)')
             .attr('class', 'timeline-axis')
-    
-        // Draw the line from the axis to the circle
-        const lines = svg.append('g')
-            .selectAll('line')
-            .data(data)
-            .join('line')
-                .attr('id', (d, i) => 'extension-' + i)
-                .attr('class', 'line-extension')
-                .attr('x1', 100)
-                .attr('y1', d=> y(new Date(d.launch_date_utc)) + 100)
-                .attr('x2', lineLength)
-                .attr('y2', d=> y(new Date(d.launch_date_utc)) + 100)
         
         const nodes = svg.selectAll('.node')
-            .data(data)
+            .data(data, d => d.flight_number)
             .enter()
             .append('g')
                 .attr('class', 'node')
                 .attr('transform', 'translate(0, 100)')
                 .on('mouseover', handleMouseOver)
                 .on('mouseout', handleMouseOut)
+                .on('click', toggleActive)
+
+        // Draw the line from the axis to the circle
+        const lines = nodes
+            .append('line')
+                .attr('id', (d, i) => 'extension-' + i)
+                .attr('class', 'line-extension')
+                .attr('x1', 100)
+                .attr('y1', d=> y(new Date(d.launch_date_utc)))
+                .attr('x2', lineLength)
+                .attr('y2', d=> y(new Date(d.launch_date_utc)))
 
         // Draw the circles for each launch entry
-        nodes
-            // .selectAll('circle')
-            // .data(data)
-            // .join('circle')
+        const circles = nodes
             .append('circle')
-                .attr('id', (d, i) => 'node-' + i)
+                .attr('id', (d, i) => 'circle-' + i)
                 .attr('cx', lineLength + circleRadius)
                 .attr('cy', d => y(new Date(d.launch_date_utc)))
                 .attr('r', circleRadius)
                 .style('fill', d => rocketColors[d.rocket.rocket_name])
                 
         // Draw numbers in the circles
-        nodes
-            // .selectAll('text')
-            // .data(data)
-            // .join('text')
+        const texts = nodes
             .append('text')
                 .attr('class', 'launch-number')
                 .attr('font-size', '18px')
@@ -136,11 +135,12 @@ export default function FetchData (props) {
                 .style('visibility', 'hidden')
                 .text(d => d.flight_number)
 
-    }, [data])
+    }, [data, activeNode])
 
     return (
         <div id="timeline-container">
             <svg ref={svgRef}></svg>
+            <div onClick={toggleActive} id="launch-details" className={ activeNode ? 'active-details' : 'hidden-details'}>{activeNode ? activeNode.details: ''}</div>
         </div>
     )
 }
