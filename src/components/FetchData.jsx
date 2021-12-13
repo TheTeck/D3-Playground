@@ -25,29 +25,11 @@ export default function FetchData (props) {
         }
     }
 
-    // Count up all of the unqiue rocket names
-    function getRocketCount () {
-        const launches = {};
-
-        data.forEach(launch => {
-            if (launches.hasOwnProperty(launch.rocket.rocket_name)) {
-                launches[launch.rocket.rocket_name] += 1;
-            } else {
-                launches[launch.rocket.rocket_name] = 1;
-            }
-        })
-
-        return launches;
-    }
-
     useEffect(() => {
         getData();
     }, [])
 
     useEffect(() => {
-        if (data.length) {
-            console.log(getRocketCount())
-        }
 
         const svg = d3.select(svgRef.current);
 
@@ -58,31 +40,45 @@ export default function FetchData (props) {
 
         const y = d3.scaleTime()
             .domain([minYear, maxYear])
-            .range([0, 3000])
+            .range([0, 3800])
         
         // Make circle larger when hovered over
-        function expandLaunch () {
+        function handleMouseOver () {
             this.parentNode.appendChild(this);
 
             d3.select(this)
+                .select('circle')
                 .transition()
                     .duration(250)
-                    .attr('r', circleRadius * 3)
+                    .attr('r', circleRadius * 4)
                     .attr('stroke', 'white')
                     .attr('stroke-width', 3)
-                    
-                        
+            
+            d3.select(this)
+                .select('text')
+                    .transition()
+                        .duration(250)
+                        .style('visibility', 'visible')
+                        .style('font-size', '36px')
         }
 
         // Make circle small when mouse stops hovering
-        function contractLaunch () {
+        function handleMouseOut () {
             this.parentNode.appendChild(this);
 
             d3.select(this)
+                .select('circle')
                 .transition()
                     .duration(250)
                     .attr('r', circleRadius)
                     .attr('stroke-width', 0)
+            
+            d3.select(this)
+                .select('text')
+                    .transition()
+                        .duration(250)
+                        .style('visibility', 'hidden')
+                        .style('font-size', '0px')
         }
 
         // Draw the vertical axis
@@ -90,42 +86,53 @@ export default function FetchData (props) {
             .call(d3.axisLeft(y))
             .attr('transform', 'translate(100, 100)')
             .attr('class', 'timeline-axis')
-        
+    
         // Draw the line from the axis to the circle
-        svg.append('g')
+        const lines = svg.append('g')
             .selectAll('line')
             .data(data)
             .join('line')
+                .attr('id', (d, i) => 'extension-' + i)
                 .attr('class', 'line-extension')
                 .attr('x1', 100)
                 .attr('y1', d=> y(new Date(d.launch_date_utc)) + 100)
                 .attr('x2', lineLength)
                 .attr('y2', d=> y(new Date(d.launch_date_utc)) + 100)
         
-        // Draw the circles for each launch entry
-        svg.append('g')
-            .selectAll('circle')
+        const nodes = svg.selectAll('.node')
             .data(data)
-            .join('circle')
+            .enter()
+            .append('g')
+                .attr('class', 'node')
                 .attr('transform', 'translate(0, 100)')
+                .on('mouseover', handleMouseOver)
+                .on('mouseout', handleMouseOut)
+
+        // Draw the circles for each launch entry
+        nodes
+            // .selectAll('circle')
+            // .data(data)
+            // .join('circle')
+            .append('circle')
+                .attr('id', (d, i) => 'node-' + i)
                 .attr('cx', lineLength + circleRadius)
                 .attr('cy', d => y(new Date(d.launch_date_utc)))
                 .attr('r', circleRadius)
                 .style('fill', d => rocketColors[d.rocket.rocket_name])
-                .on('mouseover', expandLaunch)
-                .on('mouseleave', contractLaunch)
                 
         // Draw numbers in the circles
-        svg.append('g')
-            .selectAll('text')
-            .data(data)
-            .join('text')
-                .attr('transform', 'translate(0, 100)')
+        nodes
+            // .selectAll('text')
+            // .data(data)
+            // .join('text')
+            .append('text')
                 .attr('class', 'launch-number')
                 .attr('font-size', '18px')
                 .attr('x', lineLength + circleRadius)
                 .attr('y', d => y(new Date(d.launch_date_utc)))
-                .attr('text-anchor', 'center')
+                .style('font-size', '0px')
+                .attr('text-anchor', 'middle')
+                .attr('alignment-baseline', 'central')
                 .style('visibility', 'hidden')
                 .text(d => d.flight_number)
 
