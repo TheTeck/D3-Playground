@@ -2,8 +2,12 @@
   width: 100vw;
   height: 100vh;
   background-color: rgb(14, 14, 14);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   overflow: auto;
   position: relative;
+  box-shadow: inset 220px 0 200px black;
 }
 
 svg {
