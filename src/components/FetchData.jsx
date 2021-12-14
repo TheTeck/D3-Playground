@@ -39,7 +39,6 @@ export default function FetchData (props) {
     }, [])
 
     useEffect(() => {
-        console.log(activeNode, '--------')
         const svg = d3.select(svgRef.current);
 
         const circleRadius = 10;
@@ -60,7 +59,6 @@ export default function FetchData (props) {
                 .transition()
                     .duration(250)
                     .attr('r', circleRadius * 4)
-                    .attr('stroke', 'white')
                     .attr('stroke-width', 3)
             
             d3.select(this)
@@ -101,10 +99,12 @@ export default function FetchData (props) {
             d3.select(this)
                 .select('line')
                     .attr('x2', lineLength + circleRadius * 6)
+                    .style('stroke-width', 3)
             
             d3.select(this)
                 .select('circle')
                     .attr('cx', lineLength + circleRadius * 6)
+                    .style('stroke-width', 3)
             
             d3.select(this)
                 .select('text')
@@ -153,6 +153,8 @@ export default function FetchData (props) {
                 .attr('r', circleRadius)
                 .style('fill', d => rocketColors[d.rocket.rocket_name])
                 .style('visibility', 'visible')
+                .attr('stroke', 'white')
+                .style('stroke-width', 0)
         }
 
         function updateLines (l) {
@@ -163,6 +165,7 @@ export default function FetchData (props) {
                 .attr('y1', d=> y(new Date(d.launch_date_utc)))
                 .attr('x2', (d, i) => lineLength + (i % 2 ? circleRadius * 2 : 0))
                 .attr('y2', d=> y(new Date(d.launch_date_utc)))
+                .style('stroke-width', 1)
         }
 
         function updateTexts (t) {
@@ -181,7 +184,7 @@ export default function FetchData (props) {
     }, [data, activeNode])
 
     return (
-        <div id="timeline-container">
+        <div id="timeline-container" style={{ 'backgroundImage': "url('/rocket.jpg')" }}>
             <svg ref={svgRef}></svg>
             <div onClick={handleHideDetails} id="launch-details" className={ activeNode ? 'active-details' : 'hidden-details'}>{activeNode ? activeNode.details: ''}</div>
         </div>
